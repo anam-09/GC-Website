@@ -122,7 +122,46 @@
   <section id="contact" class="sec contact">
     <div class="wrap"><div class="section-heading"><div><p class="kicker">We’re nearby and ready to help</p><h2>Let’s get you comfortable</h2></div><p class="sub">Tell us what you need and our team can help you with the next step.</p></div>
       <div class="contact-grid"><div class="contact-info"><h3>Grand Cool Refrigeration<br>&amp; Air Condition</h3><p class="address">Pirangut, Mulshi<br>Pune, Maharashtra</p><a class="contact-line" href="tel:+919823808054"><span class="contact-icon" aria-hidden="true">☎</span><span><small>Call our team</small><b>+91 98238 08054</b></span></a><a class="contact-line" id="contact-wa" href="#" target="_blank" rel="noopener"><span class="contact-icon" aria-hidden="true">◉</span><span><small>WhatsApp</small><b>Send us an enquiry</b></span></a><a class="text-link" href="https://www.google.com/maps/search/?api=1&amp;query=Pirangut%2C+Mulshi%2C+Pune" target="_blank" rel="noopener">Get directions <span aria-hidden="true">↗</span></a><iframe class="map" title="Map of Pirangut, Pune" loading="lazy" src="https://maps.google.com/maps?q=Pirangut%2C%20Mulshi%2C%20Pune&amp;output=embed"></iframe></div>
-        <form id="form" novalidate><div class="form-heading"><h3>Request a service</h3><p>Share a few details and continue on WhatsApp.</p></div><label>Name<input name="name" required autocomplete="name"></label><label>Phone<input name="phone" type="tel" required autocomplete="tel" inputmode="tel"></label><label>Service needed<select name="service"><option>AC Sales</option><option>AC Installation</option><option>AC Repair</option><option>AC Servicing</option><option>AMC</option><option>Commercial AC</option><option>Refrigeration</option></select></label><label>Area / Location<input name="area" autocomplete="address-level2"></label><label>Message<textarea name="msg" rows="3"></textarea></label><button class="btn form-submit" type="submit">Continue to WhatsApp <span aria-hidden="true">↗</span></button><p id="status" role="status" aria-live="polite"></p></form>
+        <form id="form" class="booking-form" aria-labelledby="booking-form-heading" novalidate>
+          <div class="form-heading"><p class="kicker">Service request</p><h3 id="booking-form-heading">Service Booking &amp; Enquiry</h3><p>Share what you need and we’ll follow up to discuss availability.</p></div>
+          <p class="backend-notice" id="booking-connection-note"><strong>Online booking is not connected yet.</strong> This form does not send or save your details. Use the separate WhatsApp option below if you want to contact us now.</p>
+          <label for="booking-name">Customer name <span class="required-mark">*</span></label>
+          <input id="booking-name" name="name" type="text" required autocomplete="name" aria-describedby="name-error" aria-invalid="false">
+          <span class="field-error" id="name-error"></span>
+
+          <label for="booking-phone">Phone number <span class="required-mark">*</span></label>
+          <input id="booking-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="e.g. 98765 43210" aria-describedby="phone-hint phone-error" aria-invalid="false">
+          <small class="field-hint" id="phone-hint">Enter a 10-digit Indian mobile number. +91 and 0 prefixes are accepted.</small>
+          <span class="field-error" id="phone-error"></span>
+
+          <label for="booking-service">Service type <span class="required-mark">*</span></label>
+          <select id="booking-service" name="service" required aria-describedby="service-error" aria-invalid="false">
+            <option value="">Choose a service</option><option>AC Repair &amp; Servicing</option><option>Installation</option><option>AMC</option><option>AC Sales Enquiry</option>
+          </select>
+          <span class="field-error" id="service-error"></span>
+
+          <label for="booking-ac-type">AC type <span class="required-mark">*</span></label>
+          <select id="booking-ac-type" name="ac_type" required aria-describedby="ac-type-error" aria-invalid="false">
+            <option value="">Choose an AC type</option><option>Split AC</option><option>Window AC</option><option>Cassette AC</option><option>Ductable AC</option><option>Commercial system</option><option>Not sure yet</option>
+          </select>
+          <span class="field-error" id="ac-type-error"></span>
+
+          <label for="booking-area">Area / location <span class="required-mark">*</span></label>
+          <input id="booking-area" name="area" type="text" required autocomplete="address-level2" aria-describedby="area-error" aria-invalid="false">
+          <span class="field-error" id="area-error"></span>
+
+          <label for="booking-date">Preferred date <span class="required-mark">*</span></label>
+          <input id="booking-date" name="preferred_date" type="date" required aria-describedby="date-error" aria-invalid="false">
+          <span class="field-error" id="date-error"></span>
+
+          <label for="booking-description">Issue description / enquiry details <span class="required-mark">*</span></label>
+          <textarea id="booking-description" name="description" rows="4" required aria-describedby="description-error" aria-invalid="false"></textarea>
+          <span class="field-error" id="description-error"></span>
+
+          <button class="btn form-submit" type="submit">Check required details</button>
+          <p id="status" class="form-status" role="status" aria-live="polite"></p>
+          <a class="btn btn-ghost whatsapp-option" id="booking-wa" href="#" target="_blank" rel="noopener" aria-label="Continue this enquiry on WhatsApp">Contact us on WhatsApp <span aria-hidden="true">↗</span></a>
+        </form>
       </div>
     </div>
   </section>

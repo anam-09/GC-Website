@@ -1,7 +1,10 @@
 const PHONE_WA = "919823808054"; // Country code and number, without +
+const BOOKING_API_URL = null; // Add the Flask endpoint here when it is available.
+
 const nav = document.getElementById("nav");
 const menu = document.getElementById("menu");
 const burger = document.getElementById("burger");
+const bookingForm = document.getElementById("form");
 
 document.getElementById("yr").textContent = new Date().getFullYear();
 
@@ -45,24 +48,122 @@ const defaultMessage = "Hello Grand Cool, I would like to enquire about your AC 
 document.getElementById("wa").href = wa(defaultMessage);
 document.getElementById("contact-wa").href = wa(defaultMessage);
 
-document.getElementById("form").addEventListener("submit", event => {
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const dateField = bookingForm.elements.namedItem("preferred_date");
+dateField.min = localDateString();
+
+const fieldErrors = {
+  name: "name-error",
+  phone: "phone-error",
+  service: "service-error",
+  ac_type: "ac-type-error",
+  area: "area-error",
+  preferred_date: "date-error",
+  description: "description-error"
+};
+const touchedFields = new Set();
+const status = document.getElementById("status");
+
+function validateField(field) {
+  const value = field.value.trim();
+  let message = "";
+
+  if (field.required && !value) {
+    message = "This field is required.";
+  } else if (field.name === "phone" && value) {
+    const normalized = value.replace(/[\s()-]/g, "");
+    if (!/^(?:\+91|91|0)?[6-9]\d{9}$/.test(normalized)) {
+      message = "Enter a valid 10-digit Indian mobile number.";
+    }
+  } else if (field.name === "preferred_date" && value && value < dateField.min) {
+    message = "Choose today or a future date.";
+  }
+
+  const error = document.getElementById(fieldErrors[field.name]);
+  error.textContent = message;
+  field.setAttribute("aria-invalid", String(Boolean(message)));
+  return !message;
+}
+
+const bookingFields = [...bookingForm.querySelectorAll("[name]")];
+bookingFields.forEach(field => {
+  field.addEventListener("blur", () => {
+    touchedFields.add(field.name);
+    validateField(field);
+  });
+  field.addEventListener("input", () => {
+    if (touchedFields.has(field.name)) validateField(field);
+    status.textContent = "";
+    status.className = "form-status";
+    updateBookingWhatsAppLink();
+  });
+  field.addEventListener("change", () => {
+    if (touchedFields.has(field.name)) validateField(field);
+    updateBookingWhatsAppLink();
+  });
+});
+
+function getBookingPayload() {
+  return Object.fromEntries(bookingFields.map(field => [field.name, field.value.trim()]));
+}
+
+function updateBookingWhatsAppLink() {
+  const data = getBookingPayload();
+  const hasDetails = Object.values(data).some(Boolean);
+  const message = hasDetails
+    ? `Hello Grand Cool, I would like to enquire about a service.\nName: ${data.name}\nPhone: ${data.phone}\nService: ${data.service}\nAC type: ${data.ac_type}\nArea: ${data.area}\nPreferred date: ${data.preferred_date}\nDetails: ${data.description}`
+    : defaultMessage;
+  document.getElementById("booking-wa").href = wa(message);
+}
+
+updateBookingWhatsAppLink();
+
+bookingForm.addEventListener("submit", async event => {
   event.preventDefault();
-  const form = event.currentTarget;
-  const status = document.getElementById("status");
-  const nameInput = form.elements.namedItem("name");
-  const phoneInput = form.elements.namedItem("phone");
-  const name = nameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  nameInput.classList.toggle("err", !name);
-  phoneInput.classList.toggle("err", !phone);
-  if (!name || !phone) {
-    status.textContent = "Please enter your name and phone number.";
-    (!name ? nameInput : phoneInput).focus();
+  const invalidFields = bookingFields.filter(field => {
+    touchedFields.add(field.name);
+    return !validateField(field);
+  });
+
+  if (invalidFields.length) {
+    status.textContent = "Please correct the highlighted fields. Nothing has been sent or saved.";
+    status.className = "form-status is-error";
+    invalidFields[0].focus();
     return;
   }
-  const message = `Hello Grand Cool, I need: ${form.elements.namedItem("service").value}.\nName: ${name}\nPhone: ${phone}\nArea: ${form.elements.namedItem("area").value.trim()}\n${form.elements.namedItem("msg").value.trim()}`;
-  status.textContent = "Opening WhatsApp…";
-  window.open(wa(message), "_blank", "noopener,noreferrer");
+
+  if (!BOOKING_API_URL) {
+    status.textContent = "Online booking is not connected. Your details have not been sent or saved. Use the separate WhatsApp button if you want to contact us.";
+    status.className = "form-status is-info";
+    return;
+  }
+
+  const submitButton = bookingForm.querySelector('[type="submit"]');
+  submitButton.disabled = true;
+  status.textContent = "Sending your request…";
+  status.className = "form-status";
+
+  try {
+    const response = await fetch(BOOKING_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(getBookingPayload())
+    });
+    if (!response.ok) throw new Error(`Booking API returned ${response.status}`);
+    status.textContent = "Your request reached the server. This is not a confirmed booking; Grand Cool will follow up separately.";
+    status.className = "form-status is-info";
+  } catch (error) {
+    status.textContent = "We could not send your request. Your details have not been confirmed; you can contact us using WhatsApp.";
+    status.className = "form-status is-error";
+  } finally {
+    submitButton.disabled = false;
+  }
 });
 
 document.querySelectorAll(".enq").forEach(button => button.addEventListener("click", () => {
