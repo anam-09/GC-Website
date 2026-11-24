@@ -1,10 +1,29 @@
-
+# Environment files and secrets
 .env
 .env.*
 !.env.example
-node_modules/
+
+# Python virtual environments
 .venv/
 venv/
+env/
+ENV/
+
+# Python generated files
 __pycache__/
 *.py[cod]
+.pytest_cache/
+
+# Node dependencies
+node_modules/
+
+# Editor and operating system files
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Temporary files and logs
+*.tmp
+*.temp
+*.log

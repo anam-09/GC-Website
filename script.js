@@ -1,5 +1,5 @@
 const PHONE_WA = "919823808054"; // Country code and number, without +
-const BOOKING_API_URL = null; // Add the Flask endpoint here when it is available.
+const BOOKING_API_URL = document.querySelector('meta[name="service-api-url"]')?.content.trim();
 
 const nav = document.getElementById("nav");
 const menu = document.getElementById("menu");
@@ -138,16 +138,11 @@ bookingForm.addEventListener("submit", async event => {
     return;
   }
 
-  if (!BOOKING_API_URL) {
-    status.textContent = "Online booking is not connected. Your details have not been sent or saved. Use the separate WhatsApp button if you want to contact us.";
-    status.className = "form-status is-info";
-    return;
-  }
-
   const submitButton = bookingForm.querySelector('[type="submit"]');
   submitButton.disabled = true;
-  status.textContent = "Sending your request…";
-  status.className = "form-status";
+  submitButton.textContent = "Submitting…";
+  status.textContent = "Sending your enquiry. Please wait…";
+  status.className = "form-status is-loading";
 
   try {
     const response = await fetch(BOOKING_API_URL, {
@@ -155,14 +150,32 @@ bookingForm.addEventListener("submit", async event => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(getBookingPayload())
     });
-    if (!response.ok) throw new Error(`Booking API returned ${response.status}`);
-    status.textContent = "Your request reached the server. This is not a confirmed booking; Grand Cool will follow up separately.";
+    const result = await response.json().catch(() => ({}));
+    if (response.status === 400 && result.fields) {
+      Object.entries(result.fields).forEach(([fieldName, message]) => {
+        const field = bookingForm.elements.namedItem(fieldName);
+        const error = document.getElementById(fieldErrors[fieldName]);
+        if (field && error) {
+          error.textContent = message;
+          field.setAttribute("aria-invalid", "true");
+        }
+      });
+      throw new Error("Please check the highlighted enquiry fields.");
+    }
+    if (!response.ok) throw new Error(result.error || "The enquiry could not be saved.");
+    if (response.status !== 201 || result.status !== "saved" || !result.reference_number) {
+      throw new Error("The server did not confirm a saved enquiry. Please contact us on WhatsApp.");
+    }
+    status.textContent = `Enquiry saved. Reference: ${result.reference_number}. This is not an appointment confirmation; our team will follow up.`;
     status.className = "form-status is-info";
   } catch (error) {
-    status.textContent = "We could not send your request. Your details have not been confirmed; you can contact us using WhatsApp.";
+    status.textContent = error instanceof TypeError
+      ? "Could not reach the booking API. No reference number was returned; contact us on WhatsApp if you need an immediate response."
+      : error.message;
     status.className = "form-status is-error";
   } finally {
     submitButton.disabled = false;
+    submitButton.textContent = "Submit Enquiry";
   }
 });
 
